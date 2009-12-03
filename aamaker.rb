@@ -1,4 +1,3 @@
-$ cat aamaker.rb 
 #!/usr/bin/ruby
 
 def generate
