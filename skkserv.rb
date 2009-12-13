@@ -42,14 +42,56 @@ class SKKServer
 
 end
 
+class SKKSERVDic
+
+  def initialize(host, port)
+    @host, @port = host, port
+  end
+
+  def search(q)
+    get do |io|
+      io.syswrite("1#{q.encode('EUC-JP')} \n")
+      r, s = [io], ""
+      while IO.select(r)
+        s << io.sysread(512)
+        break if s[-1, 1] == "\n"
+      end
+      s.force_encoding('EUC-JP')
+      s[2..-3].split("/") if s[0, 1] == '1'
+    end
+  end
+
+  def get
+    io = TCPSocket.new(@host, @port)
+    a = yield io
+    io.shutdown
+    io.close
+    a
+  end
+
+end
+
+class EvalDic
+  def search(q)
+    e = eval(q) rescue nil
+    ["#{q} => #{e}"]
+  end
+end
+
+class WakarimasuDic
+  def search(q)
+    ["#{q}ですね。わかります。"]
+  end
+end
+
 if $0 == __FILE__
+  require 'skkservdic'
+  dictset = [
+    SKKSERVDic.new('localhost', 1178),
+    EvalDic.new,
+    WakarimasuDic.new
+  ]
   SKKServer.new.mainloop do |q|
-    e = begin
-          eval q
-        rescue
-        end
-    a = []
-    a << "#{q} => #{e}"
-    a << "#{q}ですね。わかります。"
+    dictset.map{|d|d.search(q)}.flatten
   end
 end
