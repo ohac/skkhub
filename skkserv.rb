@@ -85,7 +85,6 @@ class WakarimasuDic
 end
 
 if $0 == __FILE__
-  require 'skkservdic'
   dictset = [
     SKKSERVDic.new('localhost', 1178),
     EvalDic.new,
