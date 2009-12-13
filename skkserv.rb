@@ -26,7 +26,7 @@ class SKKServer
   end
 
   def accept_clients
-    server = TCPServer.open(23232) # or 1178
+    server = TCPServer.open(11178) # or 1178
     loop do
       s = server.accept
       Thread.start(s) do |s2|
@@ -84,13 +84,35 @@ class WakarimasuDic
   end
 end
 
+class SocialIme
+  require 'net/http'
+  require 'timeout'
+
+  def search(q)
+    begin
+      kanji = nil
+      timeout(3) do
+        http = Net::HTTP.new('www.social-ime.com', 80)
+        http.start do |h|
+          res = h.get("/api/?string=#{URI.escape(q)}")
+          kanji = res.body.to_s.force_encoding('EUC-JP').split(/[\n\t]/)
+        end
+      end
+      kanji
+    rescue
+    end
+  end
+
+end
+
 if $0 == __FILE__
   dictset = [
     SKKSERVDic.new('localhost', 1178),
     EvalDic.new,
-    WakarimasuDic.new
+    WakarimasuDic.new,
+    SocialIme.new
   ]
   SKKServer.new.mainloop do |q|
-    dictset.map{|d|d.search(q)}.flatten
+    dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten
   end
 end
