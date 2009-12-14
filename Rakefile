@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "skkhub"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{SKK server}
+    gem.description = %Q{SKK server}
     gem.email = "ohachige@gmail.com"
     gem.homepage = "http://github.com/ohac/skkhub"
     gem.authors = ["OHASHI Hideya"]
