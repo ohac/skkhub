@@ -43,76 +43,16 @@ module SKKHub
 
   end
 
-  class SKKSERVDic
-
-    def initialize(host, port)
-      @host, @port = host, port
-    end
-
-    def search(q)
-      get do |io|
-        io.syswrite("1#{q.encode('EUC-JP')} \n")
-        r, s = [io], ""
-        while IO.select(r)
-          s << io.sysread(512)
-          break if s[-1, 1] == "\n"
-        end
-        s.force_encoding('EUC-JP')
-        s[2..-3].split("/") if s[0, 1] == '1'
-      end
-    end
-
-    def get
-      io = TCPSocket.new(@host, @port)
-      a = yield io
-      io.shutdown
-      io.close
-      a
-    end
-
-  end
-
-  class EvalDic
-    def search(q)
-      e = eval(q) rescue nil
-      ["#{q} => #{e}"]
-    end
-  end
-
-  class WakarimasuDic
-    def search(q)
-      ["#{q}ですね。わかります。"]
-    end
-  end
-
-  class SocialIme
-    require 'net/http'
-    require 'timeout'
-
-    def search(q)
-      begin
-        kanji = nil
-        timeout(3) do
-          http = Net::HTTP.new('www.social-ime.com', 80)
-          http.start do |h|
-            res = h.get("/api/?string=#{URI.escape(q)}")
-            kanji = res.body.to_s.force_encoding('EUC-JP').encode('UTF-8').split("\n")
-            kanji = kanji.map{|s|s.split("\t")}
-            s = kanji.map(&:size)
-            kanji = s.reduce(&:*).times.map do |i|
-              m = s.map{|j|(i%j).tap{i=i/j}}
-              kanji.zip(m).map{|k,l|k[l]}.join
-            end
-          end
-        end
-        kanji
-      rescue
-      end
-    end
-
-  end
-
   def self.run
+    plugins = [
+      "skkserv",
+      "eval",
+      "example",
+      "socialime",
+    ]
+    plugins.each do |plugin|
+      load "plugins/#{plugin}.rb"
+    end
     dictset = [
       SKKSERVDic.new('localhost', 1178),
       #EvalDic.new,
