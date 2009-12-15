@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 require "thread"
 require "socket"
+require "fileutils"
+require "skkhub/config"
 
 module SKKHub
 
@@ -43,22 +45,43 @@ module SKKHub
 
   end
 
+  APP_NAME = 'skkhub'
+
+  config.system.set_default :conf_dir, File.expand_path('~/.skkhub')
+  CONF_DIR = config.system.conf_dir
+
+  config.system.set_default :conf_file, CONF_DIR + '/config'
+  CONF_FILE = config.system.conf_file
+
   def self.run
-    plugins = [
+    config.set_default :plugins, [
       "skkserv",
       "eval",
       "example",
       "socialime",
     ]
-    plugins.each do |plugin|
+    config.set_default :dictset, [
+      ['SKKSERVDic', ['localhost', 1178]],
+      'EvalDic',
+      'WakarimasuDic',
+      'SocialIme',
+    ]
+    unless File.exist?(CONF_DIR)
+      FileUtils.mkdir(CONF_DIR)
+      FileUtils.touch(CONF_FILE)
+    end
+    load CONF_FILE
+    config.plugins.each do |plugin|
       load "plugins/#{plugin}.rb"
     end
-    dictset = [
-      SKKSERVDic.new('localhost', 1178),
-      #EvalDic.new,
-      #WakarimasuDic.new,
-      SocialIme.new,
-    ]
+    dictset = config.dictset.map do |dict|
+      case dict
+      when Array
+        Class.class_eval(dict[0]).new(*dict[1])
+      else
+        Class.class_eval(dict).new
+      end
+    end
     SKKServer.new.mainloop do |q|
       dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten
     end
