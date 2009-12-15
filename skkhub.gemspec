@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
      "VERSION",
      "bin/skkhub",
      "lib/skkhub.rb",
-     "run_skkhub.rb",
      "spec/skkhub_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
