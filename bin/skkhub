@@ -10,4 +10,5 @@ self_file =
 $:.unshift(File.dirname(self_file) + "/../lib")
 
 require "skkhub"
+Process.daemon
 SKKHub::run
