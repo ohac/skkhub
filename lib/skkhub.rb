@@ -85,7 +85,9 @@ module SKKHub
       end
     end
     SKKServer.new.mainloop do |q|
-      dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten
+      dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten.map do |w|
+        w.gsub(/\//, "\/")
+      end
     end
   end
 
