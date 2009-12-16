@@ -9,6 +9,7 @@ module SKKHub
   class SKKServer
 
     def mainloop
+      filter = SKKHub::AZIKFilter.new
       accept_clients do |s|
         while cmdbuf = s.sysread(512)
           t = case cmdbuf[0, 1]
@@ -16,7 +17,12 @@ module SKKHub
                 q = cmdbuf.split[0]
                 q.slice!(0)
                 q.force_encoding('EUC-JP')
-                a = yield(q.encode('UTF-8')).map{|i|i.encode('EUC-JP')}
+                q1 = q.encode('UTF-8')
+                a1 = yield(q1)
+                q2 = filter.pre_filter(q1)
+                a2 = !q2.nil? ? yield(q2) : []
+                a2.map!{|a3|filter.post_filter(a3.encode('UTF-8'))}
+                a = (a1 + a2).map{|i|i.encode('EUC-JP')}
                 a.empty? ? "4\n" : "1/#{a.join('/')}/\n"
               when '2'
                 'skkservtest-0.0.1 '
@@ -60,6 +66,7 @@ module SKKHub
       "example",
       "socialime",
       "aamaker",
+      "azik",
     ]
     config.set_default :dictset, [
       ['SKKSERVDic', ['localhost', 1178]],
