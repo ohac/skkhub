@@ -59,12 +59,14 @@ module SKKHub
       "eval",
       "example",
       "socialime",
+      "aamaker",
     ]
     config.set_default :dictset, [
       ['SKKSERVDic', ['localhost', 1178]],
       'EvalDic',
       'WakarimasuDic',
       'SocialIme',
+      'AAMaker',
     ]
     unless File.exist?(CONF_DIR)
       FileUtils.mkdir(CONF_DIR)
