@@ -23,7 +23,7 @@ module SKKHub
                 a2 = !q2.nil? ? yield(q2) : []
                 a2.map!{|a3|filter.post_filter(a3.encode('UTF-8'))}
                 a = (a1 + a2).map do |i|
-                  i.encode('EUC-JP')} rescue '?'
+                  i.encode('EUC-JP') rescue '?'
                 end
                 a.empty? ? "4\n" : "1/#{a.join('/')}/\n"
               when '2'
