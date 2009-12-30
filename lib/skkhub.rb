@@ -95,8 +95,8 @@ module SKKHub
     end
     SKKServer.new.mainloop do |q|
       dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten.map do |w|
-        w.gsub(/\//, "\/")
-      end
+        w.gsub(/\//, '(concat "\\\057")').gsub(/[\[\]]/, '?') # TODO
+      end.uniq
     end
   end
 
