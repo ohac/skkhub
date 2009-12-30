@@ -16,7 +16,9 @@ module SKKHub
                 q = cmdbuf.split[0]
                 q.slice!(0)
                 q.force_encoding('EUC-JP')
-                a = yield(q.encode('UTF-8')).map{|i|i.encode('EUC-JP')}
+                a = yield(q.encode('UTF-8')).map do |i|
+                  i.encode('EUC-JP') rescue '?'
+                end
                 a.empty? ? "4\n" : "1/#{a.join('/')}/\n"
               when '2'
                 'skkservtest-0.0.1 '
