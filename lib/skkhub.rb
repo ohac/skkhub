@@ -9,6 +9,7 @@ module SKKHub
   class SKKServer
 
     def mainloop
+      filter = SKKHub::AZIKFilter.new
       accept_clients do |s|
         while cmdbuf = s.sysread(512)
           t = case cmdbuf[0, 1]
@@ -16,8 +17,13 @@ module SKKHub
                 q = cmdbuf.split[0]
                 q.slice!(0)
                 q.force_encoding('EUC-JP')
-                a = yield(q.encode('UTF-8')).map do |i|
-                  i.encode('EUC-JP') rescue '?'
+                q1 = q.encode('UTF-8')
+                a1 = yield(q1)
+                q2 = filter.pre_filter(q1)
+                a2 = !q2.nil? ? yield(q2) : []
+                a2.map!{|a3|filter.post_filter(a3.encode('UTF-8'))}
+                a = (a1 + a2).map do |i|
+                  i.encode('EUC-JP')} rescue '?'
                 end
                 a.empty? ? "4\n" : "1/#{a.join('/')}/\n"
               when '2'
@@ -61,12 +67,15 @@ module SKKHub
       "eval",
       "example",
       "socialime",
+      "aamaker",
+      "azik",
     ]
     config.set_default :dictset, [
       ['SKKSERVDic', ['localhost', 1178]],
       'EvalDic',
       'WakarimasuDic',
       'SocialIme',
+      'AAMaker',
     ]
     unless File.exist?(CONF_DIR)
       FileUtils.mkdir(CONF_DIR)
@@ -85,7 +94,9 @@ module SKKHub
       end
     end
     SKKServer.new.mainloop do |q|
-      dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten
+      dictset.map{|d|d.search(q)}.select{|s|!s.nil?}.flatten.map do |w|
+        w.gsub(/\//, "\/")
+      end
     end
   end
 
